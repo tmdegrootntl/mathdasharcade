@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Dash Arcade - Mouse Arena Multiplication</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #090d16;
+            min-height: 100vh;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .font-mono-tech {
+            font-family: 'Space Grotesk', monospace;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .glow-button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .glow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+        }
+
+        .glow-button:active {
+            transform: translateY(1px);
+        }
+
+        canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav class="w-full px-6 py-3 flex justify-between items-center border-b border-slate-800 bg-slate-950/80 backdrop-blur-md z-20">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="app.showScreen('welcome')">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <span class="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
+                MATH DASH <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">ARCADE</span>
+            </span>
+        </div>
+        
+        <div id="user-status-bar" class="hidden items-center gap-3 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-700">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+            <span id="nav-player-name" class="font-semibold text-slate-200 text-sm">Player</span>
+            <span id="nav-player-avatar" class="text-xs px-2 py-0.5 bg-indigo-600/30 text-indigo-300 rounded-md font-mono">Sphere</span>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-3 sm:p-6 relative">
+
+        <section id="screen-welcome" class="w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl text-center flex flex-col items-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-3xl mb-4 border border-indigo-500/30">
+                <i class="fa-solid fa-mouse-pointer"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white mb-1">Mouse Arena Math</h1>
+            <p class="text-slate-400 text-sm mb-6">Drive your avatar with mouse movements to catch correct answers and dodge traps!</p>
+            
+            <form id="form-set-name" class="w-full flex flex-col gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2 text-left">Your Player Handle</label>
+                    <input type="text" id="input-player-name" maxlength="12" placeholder="e.g. MathWizard99" required
+                        class="w-full px-5 py-3 bg-slate-900/90 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-semibold text-lg text-center transition">
+                </div>
+
+                <!-- Custom Avatar Creator -->
+                <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 text-left">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Avatar Customization</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1">Shape</span>
+                            <select id="select-avatar-shape" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
+                                <option value="circle">Orb Sphere</option>
+                                <option value="star">Star Burst</option>
+                                <option value="diamond">Diamond Core</option>
+                                <option value="shield">Battle Shield</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1">Color Theme</span>
+                            <select id="select-avatar-color" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
+                                <option value="#6366f1">Neon Indigo</option>
+                                <option value="#10b981">Emerald Green</option>
+                                <option value="#ec4899">Cyber Pink</option>
+                                <option value="#f59e0b">Solar Gold</option>
+                                <option value="#06b6d4">Electric Cyan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:opacity-95 rounded-2xl font-bold text-white text-lg glow-button flex items-center justify-center gap-2">
+                    <span>Enter Lobby</span>
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+            </form>
+        </section>
+
+        <section id="screen-lobby" class="hidden w-full max-w-xl glass-panel p-8 rounded-3xl flex flex-col gap-6">
+            <div class="text-center">
+                <h2 class="text-3xl font-extrabold text-white">Select Game Mode</h2>
+                <p class="text-slate-400 text-sm mt-1">Join a multiplayer match or practice with AI bots</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-2">
+                <!-- Host Room Box -->
+                <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-500/40 transition">
+                    <div>
+                        <div class="text-indigo-400 text-2xl mb-2"><i class="fa-solid fa-users"></i></div>
+                        <h3 class="font-bold text-lg text-white">Create Room</h3>
+                        <p class="text-xs text-slate-400 mt-1">Host a live match with friends using a 4-letter code.</p>
+                    </div>
+                    <button id="btn-create-room" class="mt-5 w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white text-sm transition flex items-center justify-center gap-2">
+                        <span>Host Multiplayer</span>
+                    </button>
+                </div>
+
+                <!-- Join Room Box -->
+                <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-purple-500/40 transition">
+                    <div>
+                        <div class="text-purple-400 text-2xl mb-2"><i class="fa-solid fa-key"></i></div>
+                        <h3 class="font-bold text-lg text-white">Join Room</h3>
+                        <p class="text-xs text-slate-400 mt-1">Enter a room code to race live against others.</p>
+                    </div>
+                    <form id="form-join-room" class="mt-3 flex flex-col gap-2">
+                        <input type="text" id="input-room-code" placeholder="4-Letter Code" maxlength="4" required
+                            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-center text-white tracking-widest uppercase font-mono font-bold focus:outline-none focus:border-purple-500">
+                        <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white text-sm transition">
+                            Join Game
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Singleplayer / Bot Practice Option -->
+            <div class="p-4 bg-gradient-to-r from-emerald-900/30 to-teal-900/30 rounded-2xl border border-emerald-500/30 flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Solo / Practice Arena</h4>
+                    <p class="text-xs text-slate-400">Play instant game with AI bots (No room required)</p>
+                </div>
+                <button id="btn-play-solo" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">
+                    Start Solo Match
+                </button>
+            </div>
+
+            <div id="lobby-error" class="hidden p-3 bg-red-500/20 border border-red-500/40 rounded-xl text-red-300 text-xs text-center"></div>
+        </section>
+
+        <section id="screen-room" class="hidden w-full max-w-2xl glass-panel p-8 rounded-3xl flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center pb-4 border-b border-slate-800 gap-4">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Room Code</span>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span id="display-room-code" class="text-4xl font-black font-mono tracking-widest text-indigo-400">----</span>
+                        <button id="btn-copy-code" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 text-xs transition" title="Copy Code">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <span id="host-badge" class="hidden px-3 py-1 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-crown mr-1"></i> HOST
+                    </span>
+                    <button id="btn-leave-room" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-xl font-semibold text-xs transition">
+                        Leave
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Settings (Host Only) -->
+            <div id="host-settings" class="p-4 bg-slate-900/60 rounded-2xl border border-slate-800">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Match Rules</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Game Mode</label>
+                        <select id="setting-gamemode" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+                            <option value="collector" selected>Bubble Collector</option>
+                            <option value="speed">Speed Runner</option>
+                            <option value="orbit">Orbit Blitz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Time Limit</label>
+                        <select id="setting-timer" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+                            <option value="30">30 Seconds</option>
+                            <option value="45" selected>45 Seconds</option>
+                            <option value="60">60 Seconds</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Max Table</label>
+                        <select id="setting-max-table" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+                            <option value="10">Up to 10s</option>
+                            <option value="12" selected>Up to 12s</option>
+                            <option value="15">Up to 15s</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players List -->
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                    <span>Connected Racers</span>
+                    <span id="player-count" class="text-indigo-400">1 Joined</span>
+                </h4>
+                <div id="players-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <div class="mt-2 text-center">
+                <button id="btn-start-game" class="hidden w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-2xl font-extrabold text-white text-lg glow-button">
+                    Start Arena Match
+                </button>
+                <div id="waiting-for-host" class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-300 text-sm animate-pulse">
+                    Waiting for room host to start...
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-game" class="hidden w-full max-w-6xl flex flex-col lg:flex-row gap-4 items-start">
+            <!-- Canvas Container -->
+            <div class="w-full lg:w-3/4 glass-panel p-4 rounded-3xl flex flex-col items-center relative overflow-hidden">
+                <!-- Top HUD Info -->
+                <div class="w-full flex justify-between items-center px-2 py-2 border-b border-slate-800/80 mb-3">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-amber-400 text-sm"></i>
+                            <span id="game-timer" class="text-xl font-black font-mono-tech text-white">45s</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/40 px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-fire text-indigo-400 text-xs"></i>
+                            <span id="game-streak" class="text-xs font-bold text-indigo-300">Streak: 0</span>
+                        </div>
+                    </div>
+
+                    <!-- Target Question Header -->
+                    <div class="bg-slate-900/90 border-2 border-indigo-500/50 px-6 py-2 rounded-2xl shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+                        <span class="text-xs uppercase text-slate-400 font-bold hidden sm:inline">TARGET:</span>
+                        <span id="arena-question" class="text-2xl sm:text-3xl font-black text-amber-300 font-mono-tech tracking-wider">7 &times; 8 = ?</span>
+                    </div>
+
+                    <div>
+                        <span id="game-score-display" class="text-2xl font-black text-emerald-400 font-mono-tech">0 pt</span>
+                    </div>
+                </div>
+
+                <!-- Interactive Canvas Screen -->
+                <div class="w-full relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
+                    <canvas id="gameCanvas" class="w-full h-[400px] sm:h-[480px] block"></canvas>
+                    
+                    <!-- Mouse Guide Helper -->
+                    <div id="mouse-guide" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-700/60 text-xs text-slate-300 pointer-events-none flex items-center gap-2">
+                        <i class="fa-solid fa-hand-pointer text-indigo-400"></i>
+                        Move mouse over canvas to steer your avatar! Catch correct numbers, dodge traps.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Leaderboard Sidebar -->
+            <div class="w-full lg:w-1/4 glass-panel p-5 rounded-3xl flex flex-col h-full self-stretch justify-between">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
+                        <span>Live Arena Leaderboard</span>
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                    </h3>
+
+                    <div id="live-leaderboard" class="flex flex-col gap-2.5 overflow-y-auto max-h-[380px]">
+                        <!-- Dynamically updated in canvas loop -->
+                    </div>
+                </div>
+
+                <!-- Instructions Mini-card -->
+                <div class="mt-4 p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400">
+                    <div class="font-bold text-slate-300 mb-1"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i> Quick Tips</div>
+                    <ul class="list-disc list-inside space-y-1 text-[11px]">
+                        <li><span class="text-emerald-400">Green Bubbles:</span> Correct Answers (+Points)</li>
+                        <li><span class="text-red-400">Red Bubbles:</span> Wrong Answers (-Points)</li>
+                        <li><span class="text-amber-400">Gems:</span> Bonus +50 pts</li>
+                        <li><span class="text-purple-400">Spikes:</span> Hazard Traps</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-results" class="hidden w-full max-w-lg glass-panel p-8 rounded-3xl text-center flex flex-col items-center">
+            <div class="w-20 h-20 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-4xl mb-4 shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-white">Match Finished!</h2>
+            <p class="text-slate-400 text-sm mb-6">Final scores from the multiplication arena</p>
+
+            <!-- Final Rankings List -->
+            <div id="final-rankings" class="w-full flex flex-col gap-3 mb-6">
+                <!-- Dynamic ranking items -->
+            </div>
+
+            <div class="flex gap-4 w-full">
+                <button id="btn-return-lobby" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition text-sm">
+                    Back to Lobby
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // APP CONFIG & INITIALIZATION
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'multi-math-arcade';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config)
+            : {
+                apiKey: "AIzaSyDemoKeyForGitHubHostingOnly",
+                authDomain: "demo-math-app.firebaseapp.com",
+                projectId: "demo-math-app",
+                storageBucket: "demo-math-app.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:abcdef"
+            };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Web Audio Synthesizer
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playPop() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playWrong() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+
+            playGem() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const notes = [587.33, 880];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.08 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + i * 0.08);
+                    osc.stop(this.ctx.currentTime + i * 0.08 + 0.15);
+                });
+            }
+        }
+
+        const sounds = new SoundEngine();
+
+        class GameEngine {
+            constructor() {
+                this.currentUser = null;
+                this.playerName = 'Speedster';
+                this.avatarShape = 'circle';
+                this.avatarColor = '#6366f1';
+                this.roomCode = null;
+                this.isHost = false;
+                this.isSolo = false;
+                this.roomUnsubscribe = null;
+
+                // Game Loop & Canvas Variables
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animFrameId = null;
+
+                // Player Mouse Physics
+                this.player = {
+                    x: 200,
+                    y: 200,
+                    radius: 18,
+                    vx: 0,
+                    vy: 0,
+                    targetX: 200,
+                    targetY: 200,
+                    trail: []
+                };
+
+                // Game Elements State
+                this.score = 0;
+                this.streak = 0;
+                this.timeLeft = 45;
+                this.gameTimer = null;
+                this.gameState = 'lobby';
+                this.currentQuestion = { num1: 0, num2: 0, answer: 0 };
+                
+                this.bubbles = [];
+                this.gems = [];
+                this.hazards = [];
+                this.particles = [];
+                this.bots = [];
+
+                this.initAuth();
+                this.bindEvents();
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            async initAuth() {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        this.currentUser = cred.user;
+                    } else {
+                        const cred = await signInAnonymously(auth);
+                        this.currentUser = cred.user;
+                    }
+                } catch (e) {
+                    console.error("Auth error:", e);
+                }
+            }
+
+            resizeCanvas() {
+                if (!this.canvas) return;
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            showScreen(screenId) {
+                const screens = ['welcome', 'lobby', 'room', 'game', 'results'];
+                screens.forEach(id => {
+                    const el = document.getElementById(`screen-${id}`);
+                    if (el) el.classList.add('hidden');
+                });
+                const active = document.getElementById(`screen-${screenId}`);
+                if (active) active.classList.remove('hidden');
+
+                const status = document.getElementById('user-status-bar');
+                if (screenId === 'welcome') {
+                    status.classList.add('hidden');
+                    status.classList.remove('flex');
+                } else {
+                    status.classList.remove('hidden');
+                    status.classList.add('flex');
+                }
+            }
+
+            bindEvents() {
+                // Name Set
+                document.getElementById('form-set-name').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('input-player-name').value.trim();
+                    if (name) {
+                        this.playerName = name;
+                        this.avatarShape = document.getElementById('select-avatar-shape').value;
+                        this.avatarColor = document.getElementById('select-avatar-color').value;
+
+                        document.getElementById('nav-player-name').textContent = name;
+                        document.getElementById('nav-player-avatar').textContent = this.avatarShape.toUpperCase();
+                        this.showScreen('lobby');
+                    }
+                });
+
+                // Lobby Buttons
+                document.getElementById('btn-create-room').addEventListener('click', () => this.createRoom());
+                document.getElementById('form-join-room').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const code = document.getElementById('input-room-code').value.trim().toUpperCase();
+                    if (code.length === 4) this.joinRoom(code);
+                });
+
+                document.getElementById('btn-play-solo').addEventListener('click', () => this.startSoloMatch());
+
+                // Room Buttons
+                document.getElementById('btn-copy-code').addEventListener('click', () => {
+                    if (this.roomCode) {
+                        navigator.clipboard?.writeText(this.roomCode);
+                        const btn = document.getElementById('btn-copy-code');
+                        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>`;
+                        setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-copy"></i>`, 2000);
+                    }
+                });
+
+                document.getElementById('btn-leave-room').addEventListener('click', () => this.leaveRoom());
+                document.getElementById('btn-start-game').addEventListener('click', () => this.startGame());
+                document.getElementById('btn-return-lobby').addEventListener('click', () => this.showScreen('lobby'));
+
+                // Mouse Movement Events for Canvas Arena
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.player.targetX = e.clientX - rect.left;
+                    this.player.targetY = e.clientY - rect.top;
+                });
+
+                this.canvas.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) {
+                        const rect = this.canvas.getBoundingClientRect();
+                        this.player.targetX = e.touches[0].clientX - rect.left;
+                        this.player.targetY = e.touches[0].clientY - rect.top;
+                    }
+                }, { passive: true });
+            }
+
+            getRoomRef(code) {
+                // RULE 1: Standard artifact path for public shared data
+                return doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+            }
+
+            generateRoomCode() {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+                let code = '';
+                for (let i = 0; i < 4; i++) {
+                    code += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return code;
+            }
+
+            async createRoom() {
+                if (!this.currentUser) return;
+                this.isSolo = false;
+                const code = this.generateRoomCode();
+                this.roomCode = code;
+                this.isHost = true;
+
+                const roomRef = this.getRoomRef(code);
+                const initialRoomData = {
+                    code: code,
+                    hostId: this.currentUser.uid,
+                    status: 'waiting',
+                    settings: {
+                        gamemode: 'collector',
+                        timer: 45,
+                        maxTable: 12
+                    },
+                    players: {
+                        [this.currentUser.uid]: {
+                            name: this.playerName,
+                            score: 0,
+                            streak: 0,
+                            color: this.avatarColor,
+                            shape: this.avatarShape,
+                            isHost: true
+                        }
+                    }
+                };
+
+                await setDoc(roomRef, initialRoomData);
+                this.listenToRoom(code);
+                this.showScreen('room');
+            }
+
+            async joinRoom(code) {
+                if (!this.currentUser) return;
+                this.isSolo = false;
+                const errBox = document.getElementById('lobby-error');
+                errBox.classList.add('hidden');
+
+                const roomRef = this.getRoomRef(code);
+                const snap = await getDoc(roomRef);
+
+                if (!snap.exists()) {
+                    errBox.textContent = "Room not found. Check code.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+
+                const roomData = snap.data();
+                if (roomData.status !== 'waiting') {
+                    errBox.textContent = "Game already in progress.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+
+                this.roomCode = code;
+                this.isHost = false;
+
+                const updatePayload = {};
+                updatePayload[`players.${this.currentUser.uid}`] = {
+                    name: this.playerName,
+                    score: 0,
+                    streak: 0,
+                    color: this.avatarColor,
+                    shape: this.avatarShape,
+                    isHost: false
+                };
+
+                await updateDoc(roomRef, updatePayload);
+                this.listenToRoom(code);
+                this.showScreen('room');
+            }
+
+            startSoloMatch() {
+                this.isSolo = true;
+                this.roomCode = 'SOLO';
+                this.isHost = true;
+
+                // Setup bots
+                this.bots = [
+                    { id: 'bot1', name: 'Bot Turbo', score: 0, color: '#f43f5e', shape: 'circle', target: null },
+                    { id: 'bot2', name: 'Bot Alpha', score: 0, color: '#06b6d4', shape: 'diamond', target: null }
+                ];
+
+                this.startLocalGameSession({
+                    settings: {
+                        timer: 45,
+                        maxTable: 12,
+                        gamemode: 'collector'
+                    }
+                });
+            }
+
+            leaveRoom() {
+                if (this.roomUnsubscribe) {
+                    this.roomUnsubscribe();
+                    this.roomUnsubscribe = null;
+                }
+                this.roomCode = null;
+                this.isHost = false;
+                this.showScreen('lobby');
+            }
+
+            listenToRoom(code) {
+                if (this.roomUnsubscribe) this.roomUnsubscribe();
+
+                const roomRef = this.getRoomRef(code);
+                this.roomUnsubscribe = onSnapshot(roomRef, (snapshot) => {
+                    if (!snapshot.exists()) return;
+                    const data = snapshot.data();
+                    this.updateRoomUI(data);
+
+                    if (data.status === 'playing' && this.gameState !== 'playing') {
+                        this.startLocalGameSession(data);
+                    } else if (data.status === 'finished' && this.gameState === 'playing') {
+                        this.endGameSession(data);
+                    }
+                }, (error) => console.error(error));
+            }
+
+            updateRoomUI(roomData) {
+                document.getElementById('display-room-code').textContent = roomData.code;
+                const isHost = roomData.hostId === this.currentUser?.uid;
+                this.isHost = isHost;
+
+                if (isHost) {
+                    document.getElementById('host-badge').classList.remove('hidden');
+                    document.getElementById('host-settings').classList.remove('hidden');
+                    document.getElementById('btn-start-game').classList.remove('hidden');
+                    document.getElementById('waiting-for-host').classList.add('hidden');
+                } else {
+                    document.getElementById('host-badge').classList.add('hidden');
+                    document.getElementById('host-settings').classList.add('hidden');
+                    document.getElementById('btn-start-game').classList.add('hidden');
+                    document.getElementById('waiting-for-host').classList.remove('hidden');
+                }
+
+                const playersList = document.getElementById('players-list');
+                playersList.innerHTML = '';
+                const players = Object.values(roomData.players || {});
+                document.getElementById('player-count').textContent = `${players.length} Joined`;
+
+                players.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = "flex items-center justify-between p-3 bg-slate-900/80 border border-slate-800 rounded-xl";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs" style="background:${p.color}">
+                                ${p.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span class="font-semibold text-sm text-slate-200">${p.name}</span>
+                        </div>
+                        ${p.isHost ? '<span class="text-xs text-amber-400 font-bold"><i class="fa-solid fa-crown"></i> Host</span>' : ''}
+                    `;
+                    playersList.appendChild(card);
+                });
+            }
+
+            async startGame() {
+                if (!this.isHost || !this.roomCode) return;
+
+                const timerVal = parseInt(document.getElementById('setting-timer').value, 10);
+                const maxTableVal = parseInt(document.getElementById('setting-max-table').value, 10);
+                const modeVal = document.getElementById('setting-gamemode').value;
+
+                const roomRef = this.getRoomRef(this.roomCode);
+                await updateDoc(roomRef, {
+                    status: 'playing',
+                    'settings.timer': timerVal,
+                    'settings.maxTable': maxTableVal,
+                    'settings.gamemode': modeVal
+                });
+            }
+
+            startLocalGameSession(roomData) {
+                this.gameState = 'playing';
+                this.score = 0;
+                this.streak = 0;
+                this.timeLeft = roomData.settings.timer || 45;
+
+                this.showScreen('game');
+                this.resizeCanvas();
+
+                this.player.x = this.canvas.width / 2;
+                this.player.y = this.canvas.height / 2;
+                this.player.targetX = this.player.x;
+                this.player.targetY = this.player.y;
+
+                this.spawnQuestion(roomData.settings.maxTable || 12);
+
+                // Start Game Ticker
+                clearInterval(this.gameTimer);
+                this.gameTimer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('game-timer').textContent = `${this.timeLeft}s`;
+
+                    if (this.isSolo) {
+                        this.updateBotLogic();
+                    }
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.gameTimer);
+                        if (this.isHost && !this.isSolo) {
+                            updateDoc(this.getRoomRef(this.roomCode), { status: 'finished' });
+                        } else if (this.isSolo) {
+                            this.endGameSessionSolo();
+                        }
+                    }
+                }, 1000);
+
+                // Start Canvas Render Loop
+                cancelAnimationFrame(this.animFrameId);
+                this.renderLoop();
+            }
+
+            spawnQuestion(maxTable = 12) {
+                const num1 = Math.floor(Math.random() * maxTable) + 1;
+                const num2 = Math.floor(Math.random() * maxTable) + 1;
+                const answer = num1 * num2;
+
+                this.currentQuestion = { num1, num2, answer };
+                document.getElementById('arena-question').innerHTML = `${num1} &times; ${num2} = ?`;
+
+                // Generate Answer Bubbles
+                this.bubbles = [];
+                const correctIdx = Math.floor(Math.random() * 4);
+
+                for (let i = 0; i < 4; i++) {
+                    let val = answer;
+                    if (i !== correctIdx) {
+                        const offset = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                        val = Math.max(1, answer + offset);
+                    }
+
+                    this.bubbles.push({
+                        x: Math.random() * (this.canvas.width - 100) + 50,
+                        y: Math.random() * (this.canvas.height - 100) + 50,
+                        radius: 26,
+                        value: val,
+                        isCorrect: (i === correctIdx),
+                        vx: (Math.random() - 0.5) * 1.5,
+                        vy: (Math.random() - 0.5) * 1.5,
+                        pulse: Math.random() * Math.PI
+                    });
+                }
+
+                // Spawn Hazards & Gems
+                this.spawnGemsAndHazards();
+            }
+
+            spawnGemsAndHazards() {
+                this.gems = [];
+                this.hazards = [];
+
+                // Bonus Gems
+                for (let i = 0; i < 2; i++) {
+                    this.gems.push({
+                        x: Math.random() * (this.canvas.width - 80) + 40,
+                        y: Math.random() * (this.canvas.height - 80) + 40,
+                        size: 14,
+                        rotation: 0
+                    });
+                }
+
+                // Traps / Spikes
+                for (let i = 0; i < 3; i++) {
+                    this.hazards.push({
+                        x: Math.random() * (this.canvas.width - 80) + 40,
+                        y: Math.random() * (this.canvas.height - 80) + 40,
+                        radius: 18,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2
+                    });
+                }
+            }
+
+            updateBotLogic() {
+                const correctBubble = this.bubbles.find(b => b.isCorrect);
+                if (!correctBubble) return;
+
+                this.bots.forEach(bot => {
+                    if (Math.random() < 0.35) { // Bot score chance per sec
+                        bot.score += 100;
+                        sounds.playPop();
+                    }
+                });
+            }
+
+            renderLoop() {
+                if (this.gameState !== 'playing') return;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw Grid BG
+                this.drawGrid();
+
+                // Smooth Mouse Follow Physics (Easing)
+                const dx = this.player.targetX - this.player.x;
+                const dy = this.player.targetY - this.player.y;
+                this.player.x += dx * 0.15;
+                this.player.y += dy * 0.15;
+
+                // Player Trail
+                this.player.trail.push({ x: this.player.x, y: this.player.y, alpha: 1 });
+                if (this.player.trail.length > 12) this.player.trail.shift();
+
+                // Draw Trail
+                this.player.trail.forEach((t, i) => {
+                    t.alpha -= 0.08;
+                    this.ctx.beginPath();
+                    this.ctx.arc(t.x, t.y, this.player.radius * (i / 12), 0, Math.PI * 2);
+                    this.ctx.fillStyle = this.avatarColor;
+                    this.ctx.globalAlpha = Math.max(0, t.alpha * 0.4);
+                    this.ctx.fill();
+                    this.ctx.globalAlpha = 1;
+                });
+
+                // Draw Player Avatar
+                this.drawAvatar(this.player.x, this.player.y, this.player.radius, this.avatarColor, this.avatarShape);
+
+                // Render & Update Hazards
+                this.hazards.forEach(h => {
+                    h.x += h.vx;
+                    h.y += h.vy;
+                    if (h.x < 20 || h.x > this.canvas.width - 20) h.vx *= -1;
+                    if (h.y < 20 || h.y > this.canvas.height - 20) h.vy *= -1;
+
+                    // Draw Spike Trap
+                    this.ctx.save();
+                    this.ctx.translate(h.x, h.y);
+                    this.ctx.fillStyle = '#ef4444';
+                    this.ctx.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        this.ctx.lineTo(Math.cos(i * Math.PI / 3) * h.radius, Math.sin(i * Math.PI / 3) * h.radius);
+                        this.ctx.lineTo(Math.cos((i + 0.5) * Math.PI / 3) * (h.radius / 2), Math.sin((i + 0.5) * Math.PI / 3) * (h.radius / 2));
+                    }
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    this.ctx.restore();
+
+                    // Collision Check with Player
+                    const dist = Math.hypot(this.player.x - h.x, this.player.y - h.y);
+                    if (dist < this.player.radius + h.radius) {
+                        this.score = Math.max(0, this.score - 50);
+                        this.streak = 0;
+                        sounds.playWrong();
+                        this.createParticles(this.player.x, this.player.y, '#ef4444');
+                        h.x = -100; // Knock out hazard
+                        this.syncScore();
+                    }
+                });
+
+                // Render & Update Gems
+                this.gems.forEach((g, idx) => {
+                    g.rotation += 0.03;
+                    this.ctx.save();
+                    this.ctx.translate(g.x, g.y);
+                    this.ctx.rotate(g.rotation);
+                    this.ctx.fillStyle = '#f59e0b';
+                    this.ctx.beginPath();
+                    this.ctx.rect(-g.size / 2, -g.size / 2, g.size, g.size);
+                    this.ctx.fill();
+                    this.ctx.restore();
+
+                    // Collect Check
+                    if (Math.hypot(this.player.x - g.x, this.player.y - g.y) < this.player.radius + g.size) {
+                        this.score += 50;
+                        sounds.playGem();
+                        this.createParticles(g.x, g.y, '#f59e0b');
+                        this.gems.splice(idx, 1);
+                        this.syncScore();
+                    }
+                });
+
+                // Render & Update Bubbles
+                this.bubbles.forEach(b => {
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    if (b.x < 30 || b.x > this.canvas.width - 30) b.vx *= -1;
+                    if (b.y < 30 || b.y > this.canvas.height - 30) b.vy *= -1;
+
+                    b.pulse += 0.05;
+                    const scaleRadius = b.radius + Math.sin(b.pulse) * 2;
+
+                    // Draw Bubble
+                    this.ctx.beginPath();
+                    this.ctx.arc(b.x, b.y, scaleRadius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = b.isCorrect ? 'rgba(16, 185, 129, 0.25)' : 'rgba(99, 102, 241, 0.2)';
+                    this.ctx.strokeStyle = b.isCorrect ? '#10b981' : '#6366f1';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.fill();
+                    this.ctx.stroke();
+
+                    // Number Text
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.font = 'bold 16px "Space Grotesk", sans-serif';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(b.value, b.x, b.y);
+
+                    // Collision Check
+                    const dist = Math.hypot(this.player.x - b.x, this.player.y - b.y);
+                    if (dist < this.player.radius + scaleRadius) {
+                        if (b.isCorrect) {
+                            sounds.playPop();
+                            this.streak++;
+                            const points = 100 + (this.streak * 10);
+                            this.score += points;
+                            this.createParticles(b.x, b.y, '#10b981');
+                            this.spawnQuestion();
+                        } else {
+                            sounds.playWrong();
+                            this.streak = 0;
+                            this.score = Math.max(0, this.score - 30);
+                            this.createParticles(b.x, b.y, '#f43f5e');
+                            b.x = -200; // Remove wrong bubble
+                        }
+                        this.syncScore();
+                    }
+                });
+
+                // Render Particles
+                this.particles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.03;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.globalAlpha = Math.max(0, p.life);
+                    this.ctx.fill();
+                    this.ctx.globalAlpha = 1;
+
+                    if (p.life <= 0) this.particles.splice(idx, 1);
+                });
+
+                // Update HUD Text
+                document.getElementById('game-streak').textContent = `Streak: ${this.streak}`;
+                document.getElementById('game-score-display').textContent = `${this.score} pt`;
+
+                // Request Next Frame
+                this.animFrameId = requestAnimationFrame(() => this.renderLoop());
+            }
+
+            drawGrid() {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                this.ctx.lineWidth = 1;
+                const step = 40;
+                for (let x = 0; x < this.canvas.width; x += step) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                for (let y = 0; y < this.canvas.height; y += step) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+
+            drawAvatar(x, y, r, color, shape) {
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.fillStyle = color;
+                this.ctx.shadowColor = color;
+                this.ctx.shadowBlur = 15;
+
+                this.ctx.beginPath();
+                if (shape === 'star') {
+                    for (let i = 0; i < 5; i++) {
+                        this.ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * r, -Math.sin((18 + i * 72) * Math.PI / 180) * r);
+                        this.ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (r / 2), -Math.sin((54 + i * 72) * Math.PI / 180) * (r / 2));
+                    }
+                } else if (shape === 'diamond') {
+                    this.ctx.moveTo(0, -r);
+                    this.ctx.lineTo(r, 0);
+                    this.ctx.lineTo(0, r);
+                    this.ctx.lineTo(-r, 0);
+                } else {
+                    this.ctx.arc(0, 0, r, 0, Math.PI * 2);
+                }
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.restore();
+            }
+
+            createParticles(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        size: Math.random() * 4 + 2,
+                        color: color,
+                        life: 1
+                    });
+                }
+            }
+
+            async syncScore() {
+                if (this.isSolo || !this.roomCode || !this.currentUser) return;
+                const roomRef = this.getRoomRef(this.roomCode);
+                const updatePayload = {};
+                updatePayload[`players.${this.currentUser.uid}.score`] = this.score;
+                updatePayload[`players.${this.currentUser.uid}.streak`] = this.streak;
+                await updateDoc(roomRef, updatePayload);
+            }
+
+            endGameSessionSolo() {
+                this.gameState = 'finished';
+                cancelAnimationFrame(this.animFrameId);
+
+                const rankings = document.getElementById('final-rankings');
+                rankings.innerHTML = '';
+
+                const list = [
+                    { name: this.playerName, score: this.score },
+                    ...this.bots.map(b => ({ name: b.name, score: b.score }))
+                ].sort((a, b) => b.score - a.score);
+
+                list.forEach((p, idx) => {
+                    const item = document.createElement('div');
+                    item.className = "flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-slate-800";
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</span>
+                            <span class="font-bold text-white">${p.name}</span>
+                        </div>
+                        <span class="font-mono font-black text-indigo-400">${p.score} pts</span>
+                    `;
+                    rankings.appendChild(item);
+                });
+
+                this.showScreen('results');
+            }
+
+            endGameSession(roomData) {
+                this.gameState = 'finished';
+                cancelAnimationFrame(this.animFrameId);
+
+                const rankings = document.getElementById('final-rankings');
+                rankings.innerHTML = '';
+
+                const sorted = Object.values(roomData.players || {}).sort((a, b) => b.score - a.score);
+
+                sorted.forEach((p, idx) => {
+                    const item = document.createElement('div');
+                    item.className = "flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-slate-800";
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-xl">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</span>
+                            <span class="font-bold text-white">${p.name}</span>
+                        </div>
+                        <span class="font-mono font-black text-indigo-400">${p.score} pts</span>
+                    `;
+                    rankings.appendChild(item);
+                });
+
+                this.showScreen('results');
+            }
+        }
+
+        // Initialize Engine
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = new GameEngine();
+        });
+    </script>
+</body>
+</html>
